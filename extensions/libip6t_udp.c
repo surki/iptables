@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <ip6tables.h>
 #include <linux/netfilter_ipv6/ip6_tables.h>
+#include <netinet/in.h>
 
 /* Function which prints out usage message. */
 static void
@@ -222,7 +223,7 @@ static struct ip6tables_match udp = {
 };
 
 void
-_init(void)
+ip6t_udp_init(void)
 {
 	register_match6(&udp);
 }

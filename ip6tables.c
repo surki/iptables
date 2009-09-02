@@ -50,6 +50,12 @@
 #define FALSE 0
 #endif
 
+#ifdef ANDROID_CHANGES
+#define IN6ADDR_ANY_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
+static const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+static const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
+#endif
+
 #ifndef PROC_SYS_MODPROBE
 #define PROC_SYS_MODPROBE "/proc/sys/kernel/modprobe"
 #endif

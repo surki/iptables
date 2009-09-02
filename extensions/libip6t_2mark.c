@@ -7,7 +7,7 @@
 
 #include <ip6tables.h>
 /* For 64bit kernel / 32bit userspace */
-#include "../include/linux/netfilter_ipv6/ip6t_mark.h"
+#include "../include/linux/netfilter_ipv6/ip6t_mark_.h"
 
 /* Function which prints out usage message. */
 static void
@@ -136,7 +136,7 @@ static struct ip6tables_match mark = {
 	.extra_opts	= opts,
 };
 
-void _init(void)
+void ip6t_2mark_init(void)
 {
 	register_match6(&mark);
 }

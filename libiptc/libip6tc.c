@@ -23,10 +23,6 @@
 #define inline
 #endif
 
-#if !defined(__GLIBC__) || (__GLIBC__ < 2)
-typedef unsigned int socklen_t;
-#endif
-
 #include "libiptc/libip6tc.h"
 
 #define HOOK_PRE_ROUTING	NF_IP6_PRE_ROUTING
@@ -109,6 +105,63 @@ typedef unsigned int socklen_t;
 
 #define ALIGN			IP6T_ALIGN
 #define RETURN			IP6T_RETURN
+
+#ifdef ANDROID_CHANGES
+
+/* NOTE: These defs will have to come from kernel headers. But since Android */
+/* uses "clean" kernel headers we are forced to declare them to be self sufficient to compile. */
+/* Check bionic/libc/kernel/README.TXT */
+
+/* Or Use this patch and regenerate the headers */
+
+/* diff --git a/libc/kernel/tools/defaults.py b/libc/kernel/tools/defaults.py */
+/* index aad0092..3ea700e 100644 */
+/* --- a/libc/kernel/tools/defaults.py */
+/* +++ b/libc/kernel/tools/defaults.py */
+/* @@ -62,6 +62,7 @@ kernel_known_generic_statics = set( */
+/*            "__cmsg_nxthdr",                    # linux/socket.h */
+/*            "cmsg_nxthdr",                      # linux/socket.h */
+/*            "ipt_get_target", */
+/* +          "ip6t_get_target" */
+/*          ] */
+/*      ) */
+
+
+/* from x_tables.h
+
+/* fn returns 0 to continue iteration */
+#define XT_ENTRY_ITERATE_CONTINUE(type, entries, size, n, fn, args...) \
+({								\
+	unsigned int __i, __n;					\
+	int __ret = 0;						\
+	type *__entry;						\
+								\
+	for (__i = 0, __n = 0; __i < (size);			\
+	     __i += __entry->next_offset, __n++) { 		\
+		__entry = (void *)(entries) + __i;		\
+		if (__n < n)					\
+			continue;				\
+								\
+		__ret = fn(__entry , ## args);			\
+		if (__ret != 0)					\
+			break;					\
+	}							\
+	__ret;							\
+})
+
+/* fn returns 0 to continue iteration */
+#define XT_ENTRY_ITERATE(type, entries, size, fn, args...) \
+	XT_ENTRY_ITERATE_CONTINUE(type, entries, size, 0, fn, args)
+
+/* from netfilter_ipv6/ip6_tables.h */
+__inline__ struct ip6t_entry_target *
+ip6t_get_target(struct ip6t_entry *e)
+{
+   return (void *)e + e->target_offset;
+}
+
+#endif /* ANDROID_CHANGES */
+
 
 #include "libiptc.c"
 
