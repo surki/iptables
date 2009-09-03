@@ -1,5 +1,6 @@
 ifneq ($(TARGET_SIMULATOR),true)
   BUILD_IPTABLES := 1
+  BUILD_IP6TABLES := 1
 endif
 ifeq ($(BUILD_IPTABLES),1)
 
@@ -55,7 +56,7 @@ PF_EXT_SLIB+=2tcpmss 2tos 2ttl udp unclean CLASSIFY CONNMARK DNAT LOG #DSCP ECN
 PF_EXT_SLIB+=MASQUERADE MIRROR NETMAP NFQUEUE NOTRACK REDIRECT REJECT #MARK
 PF_EXT_SLIB+=SAME SNAT ULOG # TOS TCPMSS TTL
 
-EXT_FUNC+=$(foreach T,$(PF_EXT_SLIB),ipt_$(T))
+EXT_FUNC:=$(foreach T,$(PF_EXT_SLIB),ipt_$(T))
 
 # generated headers
 
@@ -106,6 +107,10 @@ LOCAL_STATIC_LIBRARIES := \
 
 include $(BUILD_EXECUTABLE)
 
+endif # BUILD_IPTABLES
+
+
+ifeq ($(BUILD_IP6TABLES),1)
 
 # libip6tc
 
@@ -149,20 +154,20 @@ LOCAL_CFLAGS+=-DIPTABLES_VERSION=\"1.3.7\"
 
 PF6_EXT_SLIB:=2connmark eui64 2hl icmp6 length limit mac 2mark multiport owner physdev policy standard state tcp udp CONNMARK HL LOG NFQUEUE MARK
 
-EXT_FUNC:=$(foreach T,$(PF6_EXT_SLIB),ip6t_$(T))
+EXT6_FUNC:=$(foreach T,$(PF6_EXT_SLIB),ip6t_$(T))
 
 # generated headers
 
-GEN_INITEXT:= $(intermediates)/extensions/gen_initext.c
-$(GEN_INITEXT): PRIVATE_PATH := $(LOCAL_PATH)
-$(GEN_INITEXT): PRIVATE_CUSTOM_TOOL = $(PRIVATE_PATH)/extensions/create_initext "$(EXT_FUNC)" > $@
-$(GEN_INITEXT): PRIVATE_MODULE := $(LOCAL_MODULE)
-$(GEN_INITEXT):
+GEN_INITEXT6:= $(intermediates)/extensions/gen_initext.c
+$(GEN_INITEXT6): PRIVATE_PATH := $(LOCAL_PATH)
+$(GEN_INITEXT6): PRIVATE_CUSTOM_TOOL = $(PRIVATE_PATH)/extensions/create_initext "$(EXT6_FUNC)" > $@
+$(GEN_INITEXT6): PRIVATE_MODULE := $(LOCAL_MODULE)
+$(GEN_INITEXT6):
 	$(transform-generated-source)
 
-$(intermediates)/extensions/initext.o : $(GEN_INITEXT)
+$(intermediates)/extensions/initext.o : $(GEN_INITEXT6)
 
-LOCAL_GENERATED_SOURCES:= $(GEN_INITEXT)
+LOCAL_GENERATED_SOURCES:= $(GEN_INITEXT6)
 
 LOCAL_SRC_FILES:= \
 	$(foreach T,$(PF6_EXT_SLIB),extensions/libip6t_$(T).c) \
@@ -200,5 +205,4 @@ LOCAL_STATIC_LIBRARIES := \
 
 include $(BUILD_EXECUTABLE)
 
-
-endif
+endif # BUILD_IP6TABLES
